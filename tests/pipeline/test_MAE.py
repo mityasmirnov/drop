@@ -1,7 +1,28 @@
+from pathlib import Path
+
 from tests.common import *
 
 
 class Test_MAE_Pipeline:
+
+    def test_rare_filter_preserves_gnomad_rare_variants(self, demo_dir):
+        results_script = Path(__file__).parents[2] / "drop" / "modules" / "mae-pipeline" / "MAE" / "Results.R"
+        rare_assignment = next(
+            line for line in results_script.read_text().splitlines()
+            if "res[, rare :=" in line
+        )
+        r_cmd = f"""
+                library(data.table)
+                res <- data.table(
+                    rare = c(TRUE, FALSE, NA, TRUE),
+                    cohort_freq = c(0.01, 0.01, 0.01, 0.25)
+                )
+                maxCohortFreq <- 0.05
+                {rare_assignment}
+                stopifnot(identical(res$rare, c(TRUE, FALSE, TRUE, FALSE)))
+                print(res$rare)
+                """
+        runR(r_cmd, demo_dir)
 
     def test_pipeline_no_run(self,demo_dir):
         LOGGER.info("run monoallelicExpression pipeline with \'run: false\'")
