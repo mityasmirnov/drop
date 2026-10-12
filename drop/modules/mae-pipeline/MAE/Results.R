@@ -88,7 +88,7 @@ maxCohortFreq <- snakemake@params$maxCohortFreq
 res[, N_var := .N, by = .(gene_name, contig, position)]
 res[, cohort_freq := round(N_var / uniqueN(ID), 3)]
 
-res[, rare := (isTRUE(rare) | is.na(rare)) & cohort_freq <= maxCohortFreq] 
+res[, rare := (rare == TRUE | is.na(rare)) & cohort_freq <= maxCohortFreq] 
 
 # Add significance columns
 allelicRatioCutoff <- snakemake@params$allelicRatioCutoff
